@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,12 +14,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.guiuriarte.recipeai.ui.theme.BrandOrange
+import com.guiuriarte.recipeai.ui.theme.SurfaceGray
+import com.guiuriarte.recipeai.ui.theme.TextMedium
 import com.guiuriarte.recipeai.viewmodel.SavedRecipesViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailScreen(
     recipeId: String,
@@ -29,144 +37,150 @@ fun RecipeDetailScreen(
     val savedRecipes by viewModel.savedRecipes.collectAsState()
     val recipe = savedRecipes.find { it.id == recipeId }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(recipe?.name ?: "Receita") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
-                    }
-                },
-                actions = {
-                    recipe?.let {
-                        IconButton(onClick = { viewModel.toggleFavorite(it.id, it.isFavorite) }) {
-                            Icon(
-                                imageVector = if (it.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = "Favoritar",
-                                tint = if (it.isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
+    if (recipe == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = BrandOrange)
         }
-    ) { padding ->
-        if (recipe == null) {
-            Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-                Text("Receita não encontrada.", modifier = Modifier.padding(16.dp))
-            }
-            return@Scaffold
-        }
+        return
+    }
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Header com descrição e info
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+
+            // Hero image
+            Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
+                if (recipe.imageUrl != null) {
+                    AsyncImage(
+                        model = recipe.imageUrl,
+                        contentDescription = recipe.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(SurfaceGray),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🍽", style = MaterialTheme.typography.displayLarge)
+                    }
+                }
+                // Gradiente escuro no topo e embaixo
+                Box(
+                    modifier = Modifier.fillMaxSize().background(
+                        Brush.verticalGradient(
+                            0f to Color.Black.copy(alpha = 0.35f),
+                            0.4f to Color.Transparent,
+                            1f to Color.Black.copy(alpha = 0.6f)
+                        )
+                    )
+                )
+                // Título sobre a imagem (embaixo)
+                Column(
+                    modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Text(
-                        text = recipe.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = recipe.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("⏱ ${recipe.cookingTime}") }
-                        )
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("🍽 ${recipe.servings}") }
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White.copy(alpha = 0.2f)
+                        ) {
+                            Text(
+                                "⏱ ${recipe.cookingTime}",
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White.copy(alpha = 0.2f)
+                        ) {
+                            Text(
+                                "🍽 ${recipe.servings}",
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
 
+            // Conteúdo
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Seção Ingredientes
+                // Descrição
+                Text(
+                    text = recipe.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextMedium
+                )
+
+                HorizontalDivider(color = Color(0xFFF0F0F0))
+
+                // Ingredientes
                 Text(
                     text = "Ingredientes",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.titleMedium,
+                    color = BrandOrange
                 )
-                HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        recipe.ingredients.forEach { ingredient ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                )
-                                Text(ingredient, style = MaterialTheme.typography.bodyMedium)
-                            }
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    recipe.ingredients.forEach { ingredient ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(BrandOrange, CircleShape)
+                            )
+                            Text(ingredient, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(color = Color(0xFFF0F0F0))
 
-                // Seção Modo de Preparo
+                // Modo de preparo
                 Text(
                     text = "Modo de preparo",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.titleMedium,
+                    color = BrandOrange
                 )
-                HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-
-                recipe.steps.forEachIndexed { index, step ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    recipe.steps.forEachIndexed { index, step ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.Top
                         ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .background(BrandOrange, CircleShape)
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Text(
-                                text = "${index + 1}",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold
+                                text = step,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f).padding(top = 4.dp)
                             )
                         }
-                        Text(
-                            text = step,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f).padding(top = 6.dp)
-                        )
                     }
                 }
 
@@ -174,11 +188,57 @@ fun RecipeDetailScreen(
 
                 Button(
                     onClick = { onNavigateToCooking(recipe.id) },
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(vertical = 14.dp)
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandOrange)
                 ) {
-                    Text("Iniciar Modo Cozinha 👨‍🍳", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Iniciar Modo Cozinha 👨‍🍳",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        // Botão voltar (overlay)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(12.dp)
+                .size(40.dp)
+                .background(Color.Black.copy(alpha = 0.35f), CircleShape)
+                .clip(CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = Color.White)
+            }
+        }
+
+        // Botão favoritar (overlay)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(12.dp)
+                .size(40.dp)
+                .background(Color.Black.copy(alpha = 0.35f), CircleShape)
+                .clip(CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(
+                onClick = { viewModel.toggleFavorite(recipe.id, recipe.isFavorite) },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = if (recipe.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favoritar",
+                    tint = if (recipe.isFavorite) BrandOrange else Color.White
+                )
             }
         }
     }

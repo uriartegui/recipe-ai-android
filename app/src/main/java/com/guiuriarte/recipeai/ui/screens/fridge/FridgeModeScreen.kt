@@ -1,127 +1,197 @@
 package com.guiuriarte.recipeai.ui.screens.fridge
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.guiuriarte.recipeai.ui.theme.BrandOrange
+import com.guiuriarte.recipeai.ui.theme.BrandOrangeLight
+import com.guiuriarte.recipeai.ui.theme.SurfaceGray
+import com.guiuriarte.recipeai.ui.theme.TextMedium
+import com.guiuriarte.recipeai.viewmodel.FridgeViewModel
 
-val fridgeIngredients = listOf(
-    "Arroz", "Feijão", "Frango", "Carne", "Ovo",
-    "Tomate", "Cebola", "Alho", "Queijo", "Batata",
-    "Macarrão", "Cenoura", "Pimentão", "Leite", "Manteiga"
-)
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun FridgeModeScreen(
-    onNavigateToHome: (List<String>) -> Unit
+    onNavigateToHome: (List<String>) -> Unit = {},
+    viewModel: FridgeViewModel = hiltViewModel()
 ) {
-    var checkedIngredients by remember { mutableStateOf(setOf<String>()) }
-    var customIngredient by remember { mutableStateOf("") }
-    var extraIngredients by remember { mutableStateOf(listOf<String>()) }
+    val ingredients by viewModel.ingredients.collectAsState()
+    var input by remember { mutableStateOf("") }
+    val keyboard = LocalSoftwareKeyboardController.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("🧊 Minha Geladeira") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
+    fun addItem() {
+        val item = input.trim()
+        if (item.isNotBlank()) {
+            viewModel.addIngredient(item)
+            input = ""
+            keyboard?.hide()
         }
-    ) { padding ->
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Header
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(
+                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "Marque o que você tem disponível:",
-                style = MaterialTheme.typography.titleMedium,
+                "Minha Geladeira 🧊",
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
+            Text(
+                "Adicione o que você tem em casa",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextMedium
+            )
+        }
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        // Input
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = input,
+                onValueChange = { input = it },
+                placeholder = { Text("Ex: 2 ovos, 500g de frango...", color = TextMedium) },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { addItem() }),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = BrandOrange,
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = SurfaceGray
+                )
+            )
+            FilledIconButton(
+                onClick = { addItem() },
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = BrandOrange),
+                modifier = Modifier.size(52.dp)
             ) {
-                (fridgeIngredients + extraIngredients).forEach { ingredient ->
-                    FilterChip(
-                        selected = ingredient in checkedIngredients,
-                        onClick = {
-                            checkedIngredients = if (ingredient in checkedIngredients) {
-                                checkedIngredients - ingredient
-                            } else {
-                                checkedIngredients + ingredient
-                            }
-                        },
-                        label = { Text(ingredient) }
-                    )
+                Icon(Icons.Default.Add, contentDescription = "Adicionar", tint = Color.White)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (ingredients.isEmpty()) {
+            // Estado vazio
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = BrandOrangeLight),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("🛒", style = MaterialTheme.typography.headlineMedium)
+                        Text(
+                            "Sua geladeira está vazia",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "Digite os ingredientes que você tem em casa e a Home vai sugerir receitas automaticamente",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextMedium,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                 }
             }
-
-            HorizontalDivider()
-
+        } else {
+            // Contador
             Text(
-                text = "Adicionar ingrediente",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                "${ingredients.size} item(ns) na geladeira",
+                style = MaterialTheme.typography.labelMedium,
+                color = TextMedium,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Lista de ingredientes
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField(
-                    value = customIngredient,
-                    onValueChange = { customIngredient = it },
-                    label = { Text("Ex: Abóbora") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true
-                )
-                IconButton(
-                    onClick = {
-                        if (customIngredient.isNotBlank()) {
-                            extraIngredients = extraIngredients + customIngredient.trim()
-                            checkedIngredients = checkedIngredients + customIngredient.trim()
-                            customIngredient = ""
+                itemsIndexed(ingredients) { index, item ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceGray),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { viewModel.removeIngredient(index) },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Remover",
+                                    tint = TextMedium,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Adicionar",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
                 }
-            }
-
-            if (checkedIngredients.isNotEmpty()) {
-                Text(
-                    text = "${checkedIngredients.size} ingrediente(s) selecionado(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Button(
-                onClick = { onNavigateToHome(checkedIngredients.toList()) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = checkedIngredients.isNotEmpty()
-            ) {
-                Text("O que posso cozinhar? 🍳")
+                item { Spacer(modifier = Modifier.height(16.dp)) }
             }
         }
     }

@@ -6,5 +6,6 @@ data class RecipeDto(
     val ingredients: List<String>,
     val steps: List<String>,
     val cookingTime: String,
-    val servings: String
+    val servings: String,
+    val photoSearchTerm: String = ""
 )

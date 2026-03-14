@@ -32,12 +32,13 @@ android {
             "OPENAI_API_KEY",
             "\"${localProperties["OPENAI_API_KEY"] ?: ""}\""
         )
-    }
+
         buildConfigField(
             "String",
             "UNSPLASH_ACCESS_KEY",
             "\"${localProperties["UNSPLASH_ACCESS_KEY"] ?: ""}\""
     )
+    }
 
     buildTypes {
         release {

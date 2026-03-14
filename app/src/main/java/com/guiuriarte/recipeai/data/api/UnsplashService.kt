@@ -10,7 +10,7 @@ interface UnsplashService {
     suspend fun searchPhoto(
         @Header("Authorization") authorization: String,
         @Query("query") query: String,
-        @Query("per_page") perPage: Int = 1,
+        @Query("per_page") perPage: Int = 5,
         @Query("orientation") orientation: String = "landscape"
     ): UnsplashResponse
 }

@@ -3,6 +3,7 @@ package com.guiuriarte.recipeai.di
 import android.content.Context
 import androidx.room.Room
 import com.guiuriarte.recipeai.data.database.AppDatabase
+import com.guiuriarte.recipeai.data.database.MIGRATION_1_2
 import com.guiuriarte.recipeai.data.database.RecipeDao
 import dagger.Module
 import dagger.Provides
@@ -22,7 +23,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "recipe_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     @Provides

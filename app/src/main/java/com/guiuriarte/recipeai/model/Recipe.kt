@@ -9,5 +9,6 @@ data class Recipe(
     val cookingTime: String,
     val servings: String,
     val isFavorite: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val imageUrl: String? = null
 )

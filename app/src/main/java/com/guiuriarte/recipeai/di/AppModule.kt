@@ -13,6 +13,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Named
 import javax.inject.Singleton
+import android.content.Context
+import android.content.SharedPreferences
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -68,4 +72,14 @@ object AppModule {
     fun provideUnsplashService(@Named("unsplash") retrofit: Retrofit): UnsplashService {
         return retrofit.create(UnsplashService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
+        context.getSharedPreferences("recipe_ai_prefs", Context.MODE_PRIVATE)
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
 }
