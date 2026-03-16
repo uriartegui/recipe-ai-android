@@ -17,6 +17,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import com.guiuriarte.recipeai.data.api.MealDbService
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -82,4 +83,19 @@ object AppModule {
     @Singleton
     fun provideGson(): Gson = Gson()
 
+    @Provides
+    @Singleton
+    @Named("mealdb")
+    fun provideMealDbRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://www.themealdb.com/api/json/v1/1/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMealDbService(@Named("mealdb") retrofit: Retrofit): MealDbService {
+        return retrofit.create(MealDbService::class.java)
+    }
 }

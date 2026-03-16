@@ -41,11 +41,23 @@ class HomeViewModel @Inject constructor(
     private val _fridgeSuggestions = MutableStateFlow<FridgeSuggestionsState>(FridgeSuggestionsState.Idle)
     val fridgeSuggestions: StateFlow<FridgeSuggestionsState> = _fridgeSuggestions.asStateFlow()
 
+    private val _chips = MutableStateFlow<List<String>>(emptyList())
+    val chips: StateFlow<List<String>> = _chips.asStateFlow()
+
     init {
         viewModelScope.launch {
             fridgeRepository.ingredients
                 .collect { loadFridgeSuggestions() }
         }
+    }
+
+    fun addChip(item: String) {
+        if (item.isNotBlank() && !_chips.value.contains(item))
+            _chips.value = _chips.value + item
+    }
+
+    fun removeChip(item: String) {
+        _chips.value = _chips.value - item
     }
 
     fun loadFridgeSuggestions() {
@@ -66,14 +78,19 @@ class HomeViewModel @Inject constructor(
 
     fun onQueryChange(value: String) { _query.value = value }
 
-    fun generateRecipes() {
+    private val _shownRecipeNames = mutableListOf<String>()
+
+    fun generateRecipes(servings: Int = 4) {
         val q = _query.value.trim()
         if (q.isBlank()) return
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
-            val result = repository.generateRecipes(q)
+            val result = repository.generateRecipes(q, servings = servings, excludeNames = _shownRecipeNames.toList())
             _uiState.value = result.fold(
-                onSuccess = { HomeUiState.Success(it) },
+                onSuccess = { recipes ->
+                    _shownRecipeNames.addAll(recipes.map { it.name })
+                    HomeUiState.Success(recipes)
+                },
                 onFailure = { HomeUiState.Error(it.message ?: "Erro desconhecido") }
             )
         }
@@ -82,6 +99,7 @@ class HomeViewModel @Inject constructor(
     fun clearAll() {
         _uiState.value = HomeUiState.Idle
         _query.value = ""
+        _shownRecipeNames.clear()
     }
 
     fun saveRecipe(recipe: Recipe) {

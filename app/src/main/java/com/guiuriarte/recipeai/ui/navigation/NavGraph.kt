@@ -32,6 +32,13 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 onNavigateToRecipeDetail = { recipeId ->
                     navController.navigate(Screen.RecipeDetail.createRoute(recipeId))
                 },
+                onNavigateToFridge = {
+                    navController.navigate(Screen.Fridge.route) {
+                        popUpTo(Screen.Home.route) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
                 initialIngredients = ingredients
             )
         }

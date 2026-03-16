@@ -223,6 +223,13 @@ fun RecipeCard(
                         )
                     }
                 }
+                if (recipe.source != null) {
+                    Text(
+                        text = "🌐 ${recipe.source}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMedium
+                    )
+                }
             }
         }
     }

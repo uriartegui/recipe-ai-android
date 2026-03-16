@@ -108,6 +108,19 @@ fun RecipeDetailScreen(
                                 color = Color.White
                             )
                         }
+                        if (recipe.source != null) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color.White.copy(alpha = 0.2f)
+                            ) {
+                                Text(
+                                    "🌐 ${recipe.source}",
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color.White
+                                )
+                            }
+                        }
                     }
                 }
             }

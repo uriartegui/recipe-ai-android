@@ -51,11 +51,9 @@ fun MainAppContent() {
         BottomNavItem("Salvas", Icons.Default.Favorite, Screen.SavedRecipes),
     )
 
-    val showBottomBar = currentRoute in listOf(
-        Screen.Home.route,
-        Screen.Fridge.route,
-        Screen.SavedRecipes.route
-    )
+    val showBottomBar = currentRoute?.startsWith("home") == true ||
+            currentRoute == Screen.Fridge.route ||
+            currentRoute == Screen.SavedRecipes.route
 
     Scaffold(
         bottomBar = {
@@ -63,9 +61,13 @@ fun MainAppContent() {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
                         NavigationBarItem(
-                            selected = currentRoute == item.screen.route,
+                            selected = when (item.screen) {
+                                Screen.Home -> currentRoute?.startsWith("home") == true
+                                else -> currentRoute == item.screen.route
+                            },
                             onClick = {
-                                navController.navigate(item.screen.route) {
+                                val route = if (item.screen == Screen.Home) Screen.Home.createRoute() else item.screen.route
+                                navController.navigate(route) {
                                     popUpTo(Screen.Home.route) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
