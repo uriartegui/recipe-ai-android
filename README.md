@@ -6,8 +6,9 @@
 ![UI](https://img.shields.io/badge/UI-Jetpack%20Compose-blue)
 ![Version](https://img.shields.io/badge/version-1.0.0--alpha-informational)
 ![MinSDK](https://img.shields.io/badge/minSdk-26-yellow)
+![License](https://img.shields.io/badge/license-Propriet%C3%A1rio-red)
 
-> Diga o que você tem na geladeira. A IA cria as receitas.
+> ⚠️ **Este é um projeto proprietário.** O código-fonte está disponível apenas para visualização. Cópia, uso comercial ou distribuição são proibidos sem autorização prévia. Veja [LICENSE](./LICENSE).
 
 RecipeAI é um app Android que usa Inteligência Artificial para gerar receitas personalizadas com base nos ingredientes que você tem em casa, na categoria que você quer cozinhar ou em filtros como "Rápido", "Saudável" e "Gourmet". As receitas são geradas com passos detalhados e profissionais, fotos reais e ajuste automático de quantidades para qualquer número de pessoas.
 
@@ -145,3 +146,27 @@ Exibe cards com nome, tempo, foto e badge de categoria
 - **Guilherme Uriarte** — Product & Mobile Development
 
 📌 Status: 🟠 Em desenvolvimento ativo (Alpha)
+
+---
+
+## ⚖️ Licença e Direitos Autorais
+
+```
+Copyright (c) 2025 Guilherme Uriarte. Todos os direitos reservados.
+```
+
+Este projeto é **software proprietário**. O código-fonte está disponível publicamente apenas para fins de avaliação e portfólio.
+
+**É proibido**, sem autorização prévia por escrito:
+- ❌ Copiar, modificar ou distribuir este código
+- ❌ Usar este software para fins comerciais
+- ❌ Criar produtos derivados baseados neste projeto
+- ❌ Fazer engenharia reversa
+
+**É permitido:**
+- ✅ Visualizar o código-fonte para fins educacionais
+- ✅ Abrir issues com sugestões ou relatórios de bugs
+
+Para licenciamento comercial ou parcerias: **guiuriarte@gmail.com**
+
+Veja o arquivo [LICENSE](./LICENSE) para os termos completos.
